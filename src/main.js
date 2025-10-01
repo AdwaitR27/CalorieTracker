@@ -1,6 +1,6 @@
 import './CalorieTrackerStyles.css';
 import { auth, db } from './firebase';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Get today's date at midnight
@@ -145,8 +145,24 @@ if (googleSignInBtn) {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (err) {
-      authError.textContent = err.message;
       console.error('Google sign-in failed', err);
+      const code = err?.code || '';
+      if (code === 'auth/unauthorized-domain') {
+        const host = window.location.hostname;
+        authError.innerHTML = `This domain ("${host}") is not authorized for Firebase Auth.<br>
+        Please add it in Firebase Console → Authentication → Settings → Authorized domains, then try again.`;
+      } else if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user') {
+        // Fallback to redirect sign-in when popups are blocked or closed
+        try {
+          const provider = new GoogleAuthProvider();
+          await signInWithRedirect(auth, provider);
+        } catch (e2) {
+          console.error('Redirect sign-in also failed', e2);
+          authError.textContent = e2?.message || 'Sign-in failed. Please try again.';
+        }
+      } else {
+        authError.textContent = err?.message || 'Sign-in failed. Please try again.';
+      }
     }
   });
 }
