@@ -24,6 +24,72 @@ h1 {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* App header */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.user-email {
+  color: white;
+  font-weight: 600;
+}
+
+/* Auth */
+.auth-container {
+  max-width: 500px;
+  margin: 40px auto;
+}
+
+.auth-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.auth-card h2 {
+  margin-bottom: 10px;
+}
+
+.auth-hint {
+  color: #666;
+  margin-bottom: 16px;
+}
+
+#auth-form {
+  display: grid;
+  gap: 10px;
+}
+
+#auth-form input {
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.auth-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.auth-actions .secondary {
+  background: #e0e7ff;
+  color: #283593;
+}
+
+.auth-error {
+  color: #b00020;
+  font-weight: 600;
+}
+
 h2 {
   color: #333;
   font-size: 1.5rem;

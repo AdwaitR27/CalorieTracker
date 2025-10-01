@@ -1,4 +1,7 @@
 import './CalorieTrackerStyles.css';
+import { auth, db } from './firebase';
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Get today's date at midnight
 function getTodayDate() {
@@ -52,25 +55,127 @@ const weekRangeEl = document.getElementById('week-range');
 const prevWeekBtn = document.getElementById('prev-week');
 const nextWeekBtn = document.getElementById('next-week');
 
-// Initialize
-init();
+// Auth/UI wiring
+const appContainer = document.getElementById('app-container');
+const authContainer = document.getElementById('auth-container');
+const authForm = document.getElementById('auth-form');
+const authEmail = document.getElementById('auth-email');
+const authPassword = document.getElementById('auth-password');
+const loginBtn = document.getElementById('login-btn');
+const signupBtn = document.getElementById('signup-btn');
+const authError = document.getElementById('auth-error');
+const logoutBtn = document.getElementById('logout-btn');
+const userEmailEl = document.getElementById('user-email');
 
-function init() {
+let currentUser = null;
+
+function initAppUIAfterDataLoad() {
+  const todayKey = getTodayKey();
+  ensureDateArray(todayKey);
   renderWeekView();
   renderFoodList();
   updateDailySummary();
-  
+
   if (apiKey) {
     apiSetup.style.display = 'none';
     apiKeyInput.value = '••••••••';
+  } else {
+    apiSetup.style.display = 'block';
+    apiKeyInput.value = '';
   }
 }
 
-saveApiKeyBtn.addEventListener('click', () => {
+async function loadUserData() {
+  if (!currentUser) return;
+  try {
+    const ref = doc(db, 'users', currentUser.uid);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      allFoodData = data.allFoodData || {};
+      apiKey = data.groqApiKey || '';
+      // cache per user
+      localStorage.setItem(`allFoodData_${currentUser.uid}`, JSON.stringify(allFoodData));
+      if (apiKey) localStorage.setItem(`groqApiKey_${currentUser.uid}`, apiKey);
+    } else {
+      // migrate from legacy localStorage if available
+      const legacyData = JSON.parse(localStorage.getItem('allFoodData') || '{}');
+      const legacyKey = localStorage.getItem('groqApiKey') || '';
+      allFoodData = legacyData;
+      apiKey = legacyKey;
+      await setDoc(ref, { allFoodData, groqApiKey: apiKey });
+    }
+  } catch (e) {
+    console.error('Error loading user data', e);
+    // fallback to cached per-user storage
+    allFoodData = JSON.parse(localStorage.getItem(`allFoodData_${currentUser.uid}`) || '{}');
+    apiKey = localStorage.getItem(`groqApiKey_${currentUser.uid}`) || '';
+  }
+}
+
+// Auth handlers
+if (authForm) {
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    authError.textContent = '';
+    try {
+      await signInWithEmailAndPassword(auth, authEmail.value, authPassword.value);
+    } catch (err) {
+      authError.textContent = err.message;
+    }
+  });
+}
+
+if (signupBtn) {
+  signupBtn.addEventListener('click', async () => {
+    authError.textContent = '';
+    try {
+      await createUserWithEmailAndPassword(auth, authEmail.value, authPassword.value);
+    } catch (err) {
+      authError.textContent = err.message;
+    }
+  });
+}
+
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    await signOut(auth);
+  });
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    userEmailEl.textContent = user.email || '';
+    logoutBtn.style.display = 'inline-block';
+    authContainer.style.display = 'none';
+    appContainer.style.display = 'block';
+    await loadUserData();
+    initAppUIAfterDataLoad();
+  } else {
+    currentUser = null;
+    userEmailEl.textContent = '';
+    logoutBtn.style.display = 'none';
+    appContainer.style.display = 'none';
+    authContainer.style.display = 'block';
+  }
+});
+
+saveApiKeyBtn.addEventListener('click', async () => {
   const key = apiKeyInput.value.trim();
   if (key && key !== '••••••••') {
     apiKey = key;
+    // legacy cache
     localStorage.setItem('groqApiKey', apiKey);
+    // user-scoped cache
+    if (currentUser) {
+      localStorage.setItem(`groqApiKey_${currentUser.uid}`, apiKey);
+      try {
+        await setDoc(doc(db, 'users', currentUser.uid), { groqApiKey: apiKey }, { merge: true });
+      } catch (e) {
+        console.error('Failed to save API key to cloud', e);
+      }
+    }
     apiStatus.textContent = '✅ API Key saved successfully!';
     apiStatus.style.color = 'green';
     setTimeout(() => {
@@ -386,6 +491,16 @@ function updateDailySummary() {
   totalCarbsEl.textContent = totals.carbs.toFixed(1);
 }
 
-function saveData() {
+async function saveData() {
+  // legacy cache for backward compatibility
   localStorage.setItem('allFoodData', JSON.stringify(allFoodData));
+  // user-scoped cache and cloud sync
+  if (currentUser) {
+    localStorage.setItem(`allFoodData_${currentUser.uid}`, JSON.stringify(allFoodData));
+    try {
+      await setDoc(doc(db, 'users', currentUser.uid), { allFoodData }, { merge: true });
+    } catch (e) {
+      console.error('Failed to save data to cloud', e);
+    }
+  }
 }

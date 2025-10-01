@@ -6,8 +6,30 @@
   <title>AI Calorie Tracker</title>
 </head>
 <body>
-  <div class="container">
-    <h1>🍎 AI Calorie Tracker</h1>
+  <div id="auth-container" class="auth-container" style="display:none;">
+    <div class="auth-card">
+      <h2>Sign in to AI Calorie Tracker</h2>
+      <p class="auth-hint">Use your email to sign in and access your data from any device.</p>
+      <form id="auth-form">
+        <input type="email" id="auth-email" placeholder="Email" required>
+        <input type="password" id="auth-password" placeholder="Password" required>
+        <div class="auth-actions">
+          <button type="submit" id="login-btn">Log In</button>
+          <button type="button" id="signup-btn" class="secondary">Sign Up</button>
+        </div>
+        <p id="auth-error" class="auth-error"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="container" id="app-container" style="display:none;">
+    <div class="app-header">
+      <h1>🍎 AI Calorie Tracker</h1>
+      <div class="user-actions">
+        <span id="user-email" class="user-email"></span>
+        <button id="logout-btn" class="nav-btn" style="display:none;">Logout</button>
+      </div>
+    </div>
 
     <!-- API Key Setup Section -->
     <div class="api-setup-section" id="api-setup">
