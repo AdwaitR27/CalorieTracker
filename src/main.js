@@ -1,4 +1,4 @@
-import '../CalorieTrackerStyles.css';
+import './CalorieTrackerStyles.css';
 
 // Get today's date at midnight
 function getTodayDate() {
