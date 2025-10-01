@@ -8,19 +8,36 @@
 <body>
   <div id="auth-container" class="auth-container" style="display:none;">
     <div class="auth-card">
-      <h2>Sign in to AI Calorie Tracker</h2>
-      <p class="auth-hint">Use your email to sign in and access your data from any device.</p>
+      <div class="auth-brand">
+        <div class="logo">🍎</div>
+        <div class="brand-text">
+          <h2>Welcome back</h2>
+          <p class="auth-hint">Sign in to continue tracking from any device</p>
+        </div>
+      </div>
+
+      <div class="auth-actions single">
+        <button type="button" id="google-signin-btn" class="google-btn">
+          <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 533.5 544.3" aria-hidden="true"><path d="M533.5 278.4c0-18.5-1.7-36.4-5-53.6H272.1v101.4h147.1c-6.3 34.1-25.3 62.9-54 82.3v68h87.3c51.1-47.1 81-116.6 81-198.1z" fill="#4285F4"/><path d="M272.1 544.3c73.5 0 135.2-24.3 180.3-66.1l-87.3-68c-24.2 16.2-55.2 25.8-93 25.8-71.5 0-132.1-48.3-153.8-113.1H28.7v70.9c44.7 88.7 136.4 150.5 243.4 150.5z" fill="#34A853"/><path d="M118.3 322.9c-10.6-31.8-10.6-66.2 0-98.1V154H28.7c-39.3 78.6-39.3 170.8 0 249.4l89.6-70.5z" fill="#FBBC05"/><path d="M272.1 106.5c39.9-.6 78.2 14.8 107.3 43.1l79.7-79.7C411.8 23.9 344.6.4 272.1 0 165.1 0 73.4 61.8 28.7 150.5l89.6 70.5c21.7-64.7 82.3-114.5 153.8-114.5z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+      </div>
+
+      <div class="auth-divider"><span>or</span></div>
+
       <form id="auth-form">
-        <input type="email" id="auth-email" placeholder="Email" required>
-        <input type="password" id="auth-password" placeholder="Password" required>
-        <div class="auth-actions">
-          <button type="submit" id="login-btn">Log In</button>
-          <button type="button" id="signup-btn" class="secondary">Sign Up</button>
+        <div class="input-group">
+          <input type="email" id="auth-email" placeholder="Email" required autocomplete="email">
+        </div>
+        <div class="input-group">
+          <input type="password" id="auth-password" placeholder="Password" required autocomplete="current-password">
         </div>
         <div class="auth-actions">
-          <button type="button" id="google-signin-btn" class="google-btn">Continue with Google</button>
+          <button type="submit" id="login-btn" class="primary">Log In</button>
+          <button type="button" id="signup-btn" class="secondary">Create account</button>
         </div>
-        <p id="auth-error" class="auth-error"></p>
+        <p id="auth-error" class="auth-error" role="alert"></p>
+        <p class="auth-footnote">By continuing you agree to the Terms and acknowledge the Privacy Policy.</p>
       </form>
     </div>
   </div>
