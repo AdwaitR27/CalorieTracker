@@ -1,6 +1,6 @@
 import './CalorieTrackerStyles.css';
 import { auth, db } from './firebase';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Get today's date at midnight
@@ -63,6 +63,7 @@ const authEmail = document.getElementById('auth-email');
 const authPassword = document.getElementById('auth-password');
 const loginBtn = document.getElementById('login-btn');
 const signupBtn = document.getElementById('signup-btn');
+const googleSignInBtn = document.getElementById('google-signin-btn');
 const authError = document.getElementById('auth-error');
 const logoutBtn = document.getElementById('logout-btn');
 const userEmailEl = document.getElementById('user-email');
@@ -133,6 +134,19 @@ if (signupBtn) {
       await createUserWithEmailAndPassword(auth, authEmail.value, authPassword.value);
     } catch (err) {
       authError.textContent = err.message;
+    }
+  });
+}
+
+if (googleSignInBtn) {
+  googleSignInBtn.addEventListener('click', async () => {
+    authError.textContent = '';
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      authError.textContent = err.message;
+      console.error('Google sign-in failed', err);
     }
   });
 }
