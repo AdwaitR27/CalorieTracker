@@ -17,6 +17,18 @@ if (!allFoodData[today]) {
   allFoodData[today] = [];
 }
 
+// Helper to always use the correct date (handles crossing midnight without reload)
+function getTodayKey() {
+  return getTodayDate();
+}
+
+function ensureDateArray(dateKey) {
+  if (!allFoodData[dateKey]) {
+    allFoodData[dateKey] = [];
+  }
+  return allFoodData[dateKey];
+}
+
 const apiSetup = document.getElementById('api-setup');
 const apiKeyInput = document.getElementById('api-key-input');
 const saveApiKeyBtn = document.getElementById('save-api-key');
@@ -174,16 +186,17 @@ aiChatForm.addEventListener('submit', async (e) => {
       'ai'
     );
     
+    const todayKey = getTodayKey();
     const newEntry = {
       id: Date.now(),
       name: result.name,
       calories: result.calories,
       protein: result.protein,
       carbs: result.carbs,
-      date: today
+      date: todayKey
     };
     
-    allFoodData[today].push(newEntry);
+    ensureDateArray(todayKey).push(newEntry);
     saveData();
     renderFoodList();
     updateDailySummary();
@@ -294,16 +307,17 @@ foodForm.addEventListener('submit', (e) => {
   const protein = parseFloat(document.getElementById('protein').value);
   const carbs = parseFloat(document.getElementById('carbs').value);
 
+  const todayKey = getTodayKey();
   const newEntry = {
     id: Date.now(),
     name: foodName,
     calories,
     protein,
     carbs,
-    date: today
+    date: todayKey
   };
 
-  allFoodData[today].push(newEntry);
+  ensureDateArray(todayKey).push(newEntry);
   saveData();
   renderFoodList();
   updateDailySummary();
@@ -312,7 +326,9 @@ foodForm.addEventListener('submit', (e) => {
 });
 
 window.removeFood = function(id) {
-  allFoodData[today] = allFoodData[today].filter(entry => entry.id !== id);
+  const todayKey = getTodayKey();
+  const entries = ensureDateArray(todayKey);
+  allFoodData[todayKey] = entries.filter(entry => entry.id !== id);
   saveData();
   renderFoodList();
   updateDailySummary();
@@ -321,7 +337,8 @@ window.removeFood = function(id) {
 
 clearTodayBtn.addEventListener('click', () => {
   if (confirm('Clear all entries for today?')) {
-    allFoodData[today] = [];
+    const todayKey = getTodayKey();
+    allFoodData[todayKey] = [];
     saveData();
     renderFoodList();
     updateDailySummary();
@@ -330,7 +347,8 @@ clearTodayBtn.addEventListener('click', () => {
 });
 
 function renderFoodList() {
-  const todayEntries = allFoodData[today] || [];
+  const todayKey = getTodayKey();
+  const todayEntries = allFoodData[todayKey] || [];
   
   if (todayEntries.length === 0) {
     foodList.innerHTML = '<p class="empty-message">No food entries yet. Try the AI assistant above!</p>';
@@ -353,7 +371,8 @@ function renderFoodList() {
 }
 
 function updateDailySummary() {
-  const todayEntries = allFoodData[today] || [];
+  const todayKey = getTodayKey();
+  const todayEntries = allFoodData[todayKey] || [];
   
   const totals = todayEntries.reduce((acc, entry) => {
     acc.calories += entry.calories;
